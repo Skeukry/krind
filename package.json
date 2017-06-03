@@ -9,7 +9,7 @@
     },
     "main": "server/main.js",
     "scripts": {
-        "start": "server/main.js"
+        "start": "node server/main.js"
     },
     "engines": {
         "node": ">=0.10.0"
