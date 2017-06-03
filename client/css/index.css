@@ -1,0 +1,207 @@
+/*
+ * What follows is the result of much research on cross-browser styling.
+ * Credit left inline and big thanks to Nicolas Gallagher, Jonathan Neal,
+ * Kroc Camen, and the H5BP dev community and team.
+ */
+
+/* ==========================================================================
+   Base styles: opinionated defaults
+   ========================================================================== */
+
+html{
+    color: #222222;
+    font: 1em Arial, Helvetica, sans-serif;
+    line-height: 1.4;
+}
+
+body{
+    margin: 50px 0;
+}
+
+::selection{
+    background: #B3D4FC;
+    text-shadow: none;
+}
+
+hr{
+    display: block;
+    height: 1px;
+    border: 0;
+    border-top: 1px solid #CCCCCC;
+    margin: 1em 0;
+    padding: 0;
+}
+
+audio,
+canvas,
+iframe,
+img,
+svg,
+video{
+    vertical-align: middle;
+}
+
+fieldset{
+    border: 0;
+    margin: 0;
+    padding: 0;
+}
+
+textarea{
+    resize: vertical;
+}
+
+/* ==========================================================================
+   Author's custom styles
+   ========================================================================== */
+
+html{
+    text-align: center;
+}
+
+#tip{
+    opacity: 0.75;
+    margin: 0 20px;
+}
+
+#kurzusok{
+    table-layout: fixed;
+    border-collapse: collapse;
+    border-spacing: 0;
+    font-size: 16px;
+    width: 70%;
+    max-width: 1200px;
+    margin: 50px auto;
+}
+
+#kurzusok td, #kurzusok th{
+    padding-right: 10px;
+}
+
+#kurzusok th{
+    padding-top: 11px;
+    padding-bottom: 11px;
+    background-color: #4CAF50;
+    color: white;
+}
+
+#kurzusok td:nth-child(1), #kurzusok th:nth-child(1){
+    text-align: left;
+    padding-left: 40px;
+}
+
+#kurzusok td:nth-child(5){
+    color: #005605;
+}
+
+#kurzusok tr:nth-child(even){
+    background-color: #F2F2F2;
+}
+
+#kurzusok select{
+    cursor: pointer;
+}
+
+#kurzusok select.disabled{
+    color: #707070;
+}
+
+.blur{
+    filter: blur(10px);
+}
+
+@media (max-width: 1000px){
+    #kurzusok{
+        width: 90%;
+    }
+}
+
+@media (max-width: 600px){
+    #kurzusok{
+        width: 100%;
+    }
+}
+
+/* ==========================================================================
+   Tablesort's css
+   ========================================================================== */
+
+th[role=columnheader]{
+    -ms-user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+}
+
+th[role=columnheader]:not(.no-sort){
+    cursor: pointer;
+}
+
+th[role=columnheader]:not(.no-sort):after{
+    content: '';
+    float: right;
+    margin-top: 7px;
+    border-width: 0 4px 4px;
+    border-style: solid;
+    border-color: #005605 transparent;
+    visibility: hidden;
+    opacity: 0;
+}
+
+th[aria-sort=ascending]:not(.no-sort):after{
+    border-bottom: none;
+    border-width: 4px 4px 0;
+}
+
+th[aria-sort]:not(.no-sort):after{
+    visibility: visible;
+    opacity: 0.4;
+}
+
+th[role=columnheader]:not(.no-sort):hover:after{
+    visibility: visible;
+    opacity: 1;
+}
+
+/* ==========================================================================
+   Helper classes
+   ========================================================================== */
+
+.hidden{
+    display: none !important;
+}
+
+.visuallyhidden{
+    border: 0;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
+}
+
+.visuallyhidden.focusable:active,
+.visuallyhidden.focusable:focus{
+    clip: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    position: static;
+    width: auto;
+}
+
+.invisible{
+    visibility: hidden;
+}
+
+.clearfix:before,
+.clearfix:after{
+    content: " ";
+    display: table;
+}
+
+.clearfix:after{
+    clear: both;
+}

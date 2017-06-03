@@ -1,0 +1,15 @@
+{
+    "name": "krind",
+    "description": "Korrigált kredit index számoló",
+    "author": "Ferenc Kálmán <ferenckalman1997@gmail.com>",
+    "version": "0.0.1",
+    "private": true,
+    "main": "server/main.js",
+    "engines": {
+        "node": ">=0.10.0"
+    },
+    "license": "MIT",
+    "dependencies": {
+        "express": "^4.15.3"
+    }
+}

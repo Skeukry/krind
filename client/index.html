@@ -1,0 +1,41 @@
+<!doctype html>
+
+<html lang="hu">
+    <head>
+        <title>Krind</title>
+        <meta name="author" content="Ferenc Kálmán">
+        <meta name="description" content="Korrigált kredit index számoló">
+
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="stylesheet" href="css/index.css">
+    </head>
+    <body>
+        <span id="tip">Húzd a Leckekönyvből letöltött Excel fájlt az ablakba a betöltéséhez.</span>
+
+        <table id="kurzusok">
+            <thead>
+                <tr>
+                    <th data-sort-default>Kurzus</th>
+                    <th style="width: 65px">Típus</th>
+                    <th style="width: 45px">Kr.</th>
+                    <th style="width: 50px">Jegy</th>
+                    <th style="width: 55px">Telj.</th>
+                </tr>
+            </thead>
+            <tfoot>
+                <tr>
+                    <th colspan="4">Korrigált kreditindex:</th>
+                    <th id="krid">0.00</th>
+                </tr>
+            </tfoot>
+            <tbody></tbody>
+        </table>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.10.3/xlsx.full.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/tablesort/5.0.1/tablesort.min.js"></script>
+        <script src="js/index.js"></script>
+    </body>
+</html>
