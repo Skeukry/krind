@@ -1,16 +1,20 @@
 const express = require('express');
 const app = express();
 
+
+// Setup --------------------------------------------------
 app.disable('case sensitive routing');
 app.set('json spaces', 4);
 app.disable('strict routing');
 app.locals.fileOpts = {
     root: process.cwd() + '/client/'
 };
+app.locals.prod = () => app.get('env') === 'production';
 
-app.listen(3000);
+app.listen(app.locals.prod() ? 80 : 3000);
 
 
+// Routing ------------------------------------------------
 app.use(express.static(app.locals.fileOpts.root));
 
 app.use(function(req, res){
