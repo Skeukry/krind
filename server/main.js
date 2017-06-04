@@ -14,6 +14,7 @@ app.listen(process.env.PORT || 3000);
 
 
 // Routing ------------------------------------------------
+app.use(express.static(app.locals.fileOpts.root + 'favicon/'));
 app.use(express.static(app.locals.fileOpts.root));
 
 app.use(function(req, res){
