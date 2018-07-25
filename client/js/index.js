@@ -141,7 +141,7 @@ function jsonToCourseList(json){
         return {
             title: /(.+?),\s\s.+/.exec(item['Tárgy címe, előadó neve'])[1],
             type: getType(item['Óra heti (E/GY/L)']),
-            kredit: item['Kr.'],
+            kredit: parseInt(item['Kr.']),
             grade: done ? getGrade(item['Jegyek']) : 0,
             done: done
         };
