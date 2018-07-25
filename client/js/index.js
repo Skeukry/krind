@@ -10,27 +10,29 @@ document.addEventListener('drop', handleDrop, false);
 
 
 function handleDragEnter(e){
-    if(enters===0){
+    if(enters <= 0){
         clearTimeout(offTimeout);
         e.dataTransfer.dropEffect = 'copy';
         document.body.classList.add('blur');
     }
     enters++;
 }
+
 function handleDragLeave(){
     enters--;
-    if(enters===0){
+    if(enters <= 0){
         clearTimeout(offTimeout);
-        offTimeout = setTimeout(()=>{
+        offTimeout = setTimeout(() =>{
             document.body.classList.remove('blur');
         }, 100);
     }
 }
+
 function handleDrop(e){
     e.preventDefault();
     enters = 1;
     handleDragLeave();
-    handleFile(e.dataTransfer.files[0], processResult);
+    handleFile(e.dataTransfer.files[0], json => handleUpdate(jsonToCourseList(json)));
 }
 
 
@@ -43,29 +45,40 @@ function handleFile(f, cb){
 }
 
 
-function processResult(k){
+function handleUpdate(courses){
+    updateTable(courses);
+    updateStats(courses);
+    sort.refresh();
+}
+
+function updateTable(courses){
     const tbody = document.createElement('tbody');
     table.replaceChild(tbody, table.getElementsByTagName('tbody')[0]);
 
-    for(const kurzus of k){
+    for(const course of courses){
         const tr = document.createElement('tr');
 
         const title = document.createElement('td');
-        title.innerHTML = /(.+?),\s\s.+/.exec(kurzus['Tárgy címe, előadó neve'])[1];
+        title.innerHTML = course['title'];
 
         const type = document.createElement('td');
-        type.innerHTML = getType(kurzus);
+        type.innerHTML = course['type'];
 
         const kredit = document.createElement('td');
-        kredit.innerHTML = kurzus['Kr.'];
+        kredit.innerHTML = course['kredit'];
 
         const grade = document.createElement('td');
-        const sel = createSelect(getGrade(kurzus), isDone(kurzus));
+        const sel = createSelect(course['grade'], () =>{
+            course.grade = parseInt(sel.value);
+            updateStats(courses);
+            grade.setAttribute('data-sort', sel.value);
+            sort.refresh();
+        });
         grade.appendChild(sel);
         grade.setAttribute('data-sort', sel.value);
 
         const done = document.createElement('td');
-        done.innerHTML = isDone(kurzus) ? '✔' : '';
+        done.innerHTML = course['done'] ? '✔' : '';
 
         tr.appendChild(title);
         tr.appendChild(type);
@@ -74,70 +87,75 @@ function processResult(k){
         tr.appendChild(done);
         tbody.appendChild(tr);
     }
-
-    recalcKorrKrInd();
-    sort.refresh();
 }
 
-function getType(k){
-    const res = [];
-    const h = k['Óra heti (E/GY/L)'];
+function createSelect(g, cb){
+    const sel = document.createElement('select');
+    for(let i = 1; i <= 5; i++){
+        const opt = document.createElement('option');
+        opt.value = opt.innerHTML = i.toString();
+        opt.selected = i === g;
+        sel.appendChild(opt);
+    }
 
+    if(g > 0) sel.classList.add('disabled');
+    sel.addEventListener('change', cb, false);
+    return sel;
+}
+
+function updateStats(courses){
+    let krOssz = 0;
+    let krTelj = 0;
+    let krInd = 0;
+
+    for(const course of courses){
+        const kr = course['kredit'];
+        const j = course['grade'];
+
+        krOssz += kr;
+        if(j > 1){
+            krTelj += kr;
+            krInd += j * kr;
+        }
+    }
+
+    const korrKrInd = (krInd / 30) * (krTelj / krOssz);
+    document.getElementById('krid').innerHTML = korrKrInd.toFixed(2);
+}
+
+
+function bufferToJson(buf){
+    const w = 10240;
+    let data = '', l = 0;
+
+    for(; l < buf.byteLength / w; ++l) data += String.fromCharCode(...new Uint8Array(buf.slice(l * w, (l + 1) * w)));
+    data += String.fromCharCode(...new Uint8Array(buf.slice(l * w)));
+
+    const wb = XLSX.read(btoa(data), {type: 'base64'});
+    return XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+}
+
+function jsonToCourseList(json){
+    return json.map(item =>{
+        const done = item['Teljesített'] === 'Igen';
+        return {
+            title: /(.+?),\s\s.+/.exec(item['Tárgy címe, előadó neve'])[1],
+            type: getType(item['Óra heti (E/GY/L)']),
+            kredit: item['Kr.'],
+            grade: done ? getGrade(item['Jegyek']) : 0,
+            done: done
+        };
+    });
+}
+
+function getType(h){
+    const res = [];
     if(!h.startsWith('0/')) res.push('E');
     if(!h.endsWith('/0/0')) res.push('Gy');
     return res.join('+');
 }
 
-function getGrade(k){
-    if(!isDone(k)) return 1;
-    const match = /.*\s\((\d)\).*/.exec(k['Jegyek']);
+function getGrade(g){
+    const match = /.*\s\((\d)\).*/.exec(g);
     return match ? parseInt(match[1]) : 5;
-}
-
-function isDone(k){
-    return k['Teljesített'] === 'Igen';
-}
-
-function createSelect(g, d){
-    const sel = document.createElement('select');
-    for(let i = 1; i <= 5; i++){
-        const opt = document.createElement('option');
-        opt.value = opt.innerHTML = i;
-        opt.selected = i === g;
-        sel.appendChild(opt);
-    }
-    if(d) sel.classList.add('disabled');
-    sel.addEventListener('change', () =>{
-        sel.parentNode.setAttribute('data-sort', sel.value);
-        recalcKorrKrInd();
-    }, false);
-    return sel;
-}
-
-
-function recalcKorrKrInd(){
-    const kurzusok = table.querySelectorAll('tbody > tr');
-    let krOssz = 0;
-    let krTelj = 0;
-    let krInd = 0;
-
-    for(const kurzus of kurzusok){
-        const kredit = parseInt(kurzus.children[2].innerHTML);
-        const jegy = parseInt(kurzus.children[3].children[0].value);
-
-        krOssz += kredit;
-        if(jegy > 1) krTelj += kredit;
-        krInd += jegy * kredit;
-    }
-
-    document.getElementById('krid').innerHTML = (krInd / 30 * krTelj / krOssz).toFixed(2);
-}
-
-function bufferToJson(buf){
-    let data = '', l = 0, w = 10240;
-    for(; l < buf.byteLength / w; ++l) data += String.fromCharCode.apply(null, new Uint8Array(buf.slice(l * w, l * w + w)));
-    data += String.fromCharCode.apply(null, new Uint8Array(buf.slice(l * w)));
-
-    const wb = XLSX.read(btoa(data), {type: 'base64'});
-    return XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
 }
