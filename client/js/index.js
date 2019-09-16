@@ -22,7 +22,7 @@ function handleDragLeave(){
     enters--;
     if(enters <= 0){
         clearTimeout(offTimeout);
-        offTimeout = setTimeout(() =>{
+        offTimeout = setTimeout(() => {
             document.body.classList.remove('blur');
         }, 100);
     }
@@ -56,20 +56,21 @@ function updateTable(courses){
     table.replaceChild(tbody, table.getElementsByTagName('tbody')[0]);
 
     for(const course of courses){
+        if(course['skip']) continue;
         const tr = document.createElement('tr');
 
         const title = document.createElement('td');
-        title.innerHTML = course['title'];
+        title.textContent = course['title'];
 
         const type = document.createElement('td');
-        type.innerHTML = course['type'];
+        type.textContent = course['type'];
 
         const kredit = document.createElement('td');
-        kredit.innerHTML = course['kredit'];
+        kredit.textContent = course['kredit'];
 
         const grade = document.createElement('td');
-        const sel = createSelect(course['grade'], () =>{
-            course.grade = parseInt(sel.value);
+        const sel = createSelect(course['grade'], () => {
+            course['grade'] = parseInt(sel.value);
             updateStats(courses);
             grade.setAttribute('data-sort', sel.value);
             sort.refresh();
@@ -78,7 +79,7 @@ function updateTable(courses){
         grade.setAttribute('data-sort', sel.value);
 
         const done = document.createElement('td');
-        done.innerHTML = course['done'] ? '✔' : '';
+        done.textContent = course['done'] ? '✔' : '';
 
         tr.appendChild(title);
         tr.appendChild(type);
@@ -93,7 +94,7 @@ function createSelect(g, cb){
     const sel = document.createElement('select');
     for(let i = 1; i <= 5; i++){
         const opt = document.createElement('option');
-        opt.value = opt.innerHTML = i.toString();
+        opt.value = opt.textContent = i.toString();
         opt.selected = i === g;
         sel.appendChild(opt);
     }
@@ -109,6 +110,7 @@ function updateStats(courses){
     let krInd = 0;
 
     for(const course of courses){
+        if(course['skip']) continue;
         const kr = course['kredit'];
         const j = course['grade'];
 
@@ -120,7 +122,7 @@ function updateStats(courses){
     }
 
     const korrKrInd = (krInd / 30) * (krTelj / krOssz);
-    document.getElementById('krid').innerHTML = korrKrInd.toFixed(2);
+    document.getElementById('kki').textContent = korrKrInd.toFixed(2);
 }
 
 
@@ -136,12 +138,15 @@ function bufferToJson(buf){
 }
 
 function jsonToCourseList(json){
-    return json.map(item =>{
+    return json.map(item => {
         const done = item['Teljesített'] === 'Igen';
+        const kredit = parseInt(item['Kr.']);
+
         return {
             title: /(.+?),\s\s.+/.exec(item['Tárgy címe, előadó neve'])[1],
             type: getType(item['Óra heti (E/GY/L)']),
-            kredit: parseInt(item['Kr.']),
+            skip: kredit === 0 || item['Köv.'] === 'Aláírás megszerzése',
+            kredit: kredit,
             grade: done ? getGrade(item['Jegyek']) : 0,
             done: done
         };
@@ -149,13 +154,26 @@ function jsonToCourseList(json){
 }
 
 function getType(h){
-    const res = [];
-    if(!h.startsWith('0/')) res.push('E');
-    if(!h.endsWith('/0/0')) res.push('Gy');
+    const res = [], match = /(\d+)\/(\d+)\/(\d+)/.exec(h);
+    if(match[1] !== '0') res.push('E');
+    if(match[2] !== '0' || match[3] !== '0') res.push('Gy');
     return res.join('+');
 }
 
 function getGrade(g){
-    const match = /.*\s\((\d)\).*/.exec(g);
-    return match ? parseInt(match[1]) : 5;
+    const regex = /(Elégtelen|Elégséges|Közepes|Jó|Jeles)\s\((\d)\)\s(.*?)\s(\d{4}\.\d{2}\.\d{2}\.)/gi;
+    const res = [];
+    let grade;
+
+    while((grade = regex.exec(g)) !== null){
+        res.push({
+            name: grade[1],
+            value: parseInt(grade[2]),
+            teacher: grade[3],
+            date: new Date(grade[4])
+        });
+    }
+
+    res.sort((a, b) => b.date - a.date);
+    return res.length > 0 ? res[0].value : 0;
 }
