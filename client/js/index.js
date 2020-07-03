@@ -56,7 +56,7 @@ function updateTable(courses){
     table.replaceChild(tbody, table.getElementsByTagName('tbody')[0]);
 
     for(const course of courses){
-        if(course['skip']) continue;
+        if(course['kredit'] === 0) continue;
         const tr = document.createElement('tr');
 
         const title = document.createElement('td');
@@ -69,7 +69,7 @@ function updateTable(courses){
         kredit.textContent = course['kredit'];
 
         const grade = document.createElement('td');
-        const sel = createSelect(course['grade'], () => {
+        const sel = createSelect(course['grade'], course['binary'], () => {
             course['grade'] = parseInt(sel.value);
             updateStats(courses);
             grade.setAttribute('data-sort', sel.value);
@@ -90,9 +90,9 @@ function updateTable(courses){
     }
 }
 
-function createSelect(g, cb){
+function createSelect(g, b, cb){
     const sel = document.createElement('select');
-    for(let i = 1; i <= 5; i++){
+    for(let i = 1; i <= 5; i += (b ? 4 : 1)){
         const opt = document.createElement('option');
         opt.value = opt.textContent = i.toString();
         opt.selected = i === g;
@@ -110,7 +110,6 @@ function updateStats(courses){
     let krInd = 0;
 
     for(const course of courses){
-        if(course['skip']) continue;
         const kr = course['kredit'];
         const j = course['grade'];
 
@@ -144,8 +143,8 @@ function jsonToCourseList(json){
 
         return {
             title: /(.+?),\s\s.+/.exec(item['Tárgy címe, előadó neve'])[1],
-            type: getType(item['Óra heti (E/GY/L)']),
-            skip: kredit === 0 || item['Köv.'] === 'Aláírás megszerzése',
+            type: getType(item['Óra heti (E/GY/L)'] || item['Óra féléves (E/GY/L)']),
+            binary: item['Köv.'] === 'Aláírás megszerzése',
             kredit: kredit,
             grade: done ? getGrade(item['Jegyek']) : 0,
             done: done
